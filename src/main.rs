@@ -54,7 +54,8 @@ fn par_quicksort(mut arr: Vec<i32>) -> Vec<i32>{
         }
     });
 
-    let (mut sorted, mut right_sorted) = rayon::join(|| par_quicksort(left), || par_quicksort(right));
+    let (mut sorted, mut right_sorted) = rayon::join(|| par_quicksort(left),
+                                                     || par_quicksort(right));
 
     let mut pivot_vec = vec![pivot];
 
@@ -90,10 +91,31 @@ fn is_sorted(xs: Vec<i32>) -> bool {
     return true;
 }
 
+// Sequential sample sort
+fn simple_sample_sort(mut arr: Vec<i32>) -> Vec<i32> {
+    let mut temp = 0;
+    for i in 0..arr.len() {
+        for j in (1..arr.len()).rev() {
+            if arr[j] < arr[j - 1] {
+                temp = arr[j];
+                arr[j] = arr[j - 1];
+                arr[j - 1] = temp;
+            }
+        }
+    }
+    arr
+}
+
 fn main() {
+    println!("===== Quick sort =====");
     let (sorted, t) = timed(|| quicksort(gen_vec(1_000_000)));
     println!("Sequential quick sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
     let (sorted, t) = timed(|| par_quicksort(gen_vec(1_000_000)));
     println!("Parallel quick sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    println!("===== Sample sort =====");
+    let (sorted, t) = timed(|| simple_sample_sort(gen_vec(1_000_0)));
+    println!("Sequential sample sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
 
 }
+
+
