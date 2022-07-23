@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 use rand::SeedableRng;
 use rayon::prelude::*;
-
+use crossbeam;
 
 // Sequential Quick sort
 fn quicksort (mut arr: Vec<i32>) -> Vec<i32>{
@@ -92,7 +92,7 @@ fn is_sorted(xs: Vec<i32>) -> bool {
 }
 
 // Sequential sample sort
-fn simple_sample_sort(mut arr: Vec<i32>) -> Vec<i32> {
+fn sample_sort(mut arr: Vec<i32>) -> Vec<i32> {
     let mut temp = 0;
     for i in 0..arr.len() {
         for j in (1..arr.len()).rev() {
@@ -106,6 +106,20 @@ fn simple_sample_sort(mut arr: Vec<i32>) -> Vec<i32> {
     arr
 }
 
+// Parallel sample sort
+fn par_sample_sort(mut arr: Vec<i32>, thr: usize) -> Vec<i32>{
+    let len = arr.len();
+    let chunks = std::cmp::min(len, thr);
+    let _ = crossbeam::scope(|scope| {
+        for bucket in arr.chunks_mut(len / chunks) {
+            scope.spawn(move |_| quicksort(bucket.to_vec()));
+        }
+    });
+    quicksort(arr)
+}
+
+
+
 fn main() {
     println!("===== Quick sort =====");
     let (sorted, t) = timed(|| quicksort(gen_vec(1_000_000)));
@@ -113,9 +127,14 @@ fn main() {
     let (sorted, t) = timed(|| par_quicksort(gen_vec(1_000_000)));
     println!("Parallel quick sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
     println!("===== Sample sort =====");
-    let (sorted, t) = timed(|| simple_sample_sort(gen_vec(1_000_0)));
+    let (sorted, t) = timed(|| sample_sort(gen_vec(10_000)));
     println!("Sequential sample sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    let (sorted, t) = timed(|| par_sample_sort(gen_vec(10_000), 10_000));
+    println!("Parallel sample sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
 
 }
+
+
+
 
 
