@@ -1,5 +1,7 @@
 use std::time::{Duration, Instant};
 use rand::SeedableRng;
+use rayon::prelude::*;
+
 
 // Sequential Quick sort
 fn quicksort (mut arr: Vec<i32>) -> Vec<i32>{
@@ -32,6 +34,39 @@ fn quicksort (mut arr: Vec<i32>) -> Vec<i32>{
     return sorted;
 }
 
+// Parallel Quick sort
+fn par_quicksort(mut arr: Vec<i32>) -> Vec<i32>{
+
+    if arr.len() <= 1 {
+        return arr.to_vec();
+    }
+
+    let pivot = arr.pop().unwrap();
+
+    let mut left = Vec::new();
+    let mut right = Vec::new();
+
+    arr.iter().for_each(|element| {
+        if *element > pivot {
+            right.push(*element);
+        } else {
+            left.push(*element);
+        }
+    });
+
+    let (mut sorted, mut right_sorted) = rayon::join(|| par_quicksort(left), || par_quicksort(right));
+
+    let mut pivot_vec = vec![pivot];
+
+    sorted.append(&mut pivot_vec);
+    sorted.append(&mut right_sorted);
+
+    return sorted;
+
+}
+
+
+
 fn timed<R, F>(f: F) -> (R, Duration) where F: Fn() -> R {
     let starting_point = Instant::now();
     let res = f();
@@ -57,6 +92,8 @@ fn is_sorted(xs: Vec<i32>) -> bool {
 
 fn main() {
     let (sorted, t) = timed(|| quicksort(gen_vec(1_000_000)));
-    println!("quick_sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    println!("Sequential quick sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    let (sorted, t) = timed(|| par_quicksort(gen_vec(1_000_000)));
+    println!("Parallel quick sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
 
 }
