@@ -118,6 +118,21 @@ fn par_sample_sort(mut arr: Vec<i32>, thr: usize) -> Vec<i32>{
     quicksort(arr)
 }
 
+// Sequential radix sort
+fn radix_sort(mut arr: Vec<i32>) -> Vec<i32> {
+    for bit in 0..31 {
+        let (small, big): (Vec<_>, Vec<_>) = arr.iter().partition(|&&x| (x >> bit) & 1 == 0);
+        let (left, right) = arr.split_at_mut(*&small.len());
+        left.clone_from_slice(&small);
+        right.clone_from_slice(&big);
+    }
+    let (negative, positive): (Vec<_>, Vec<_>) = arr.iter().partition(|&&x| x < 0);
+    let (left, right) = arr.split_at_mut(*&negative.len());
+    left.clone_from_slice(&negative);
+    right.clone_from_slice(&positive);
+    arr
+}
+
 
 
 fn main() {
@@ -131,8 +146,14 @@ fn main() {
     println!("Sequential sample sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
     let (sorted, t) = timed(|| par_sample_sort(gen_vec(10_000), 10_000));
     println!("Parallel sample sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    println!("===== Radix sort =====");
+    let (sorted, t) = timed(|| radix_sort(gen_vec(1_000_000)));
+    println!("Sequential radix sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
 
 }
+
+
+
 
 
 
