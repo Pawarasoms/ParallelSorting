@@ -1,5 +1,6 @@
+use std::path::*;
 use std::time::{Duration, Instant};
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use rayon::prelude::*;
 use crossbeam;
 
@@ -133,6 +134,41 @@ fn radix_sort(mut arr: Vec<i32>) -> Vec<i32> {
     arr
 }
 
+// fn another_radix(mut arr: Vec<i32>) -> Vec<i32> {
+//     let max = *arr.iter().max().unwrap();
+//     let mut temp = vec![0; arr.len()];
+//     let mut exp = 1;
+//     while exp <= max { let mut buckets = [0; 10];
+//         for &x in &arr {
+//             let mut digit = 0;
+//             if x < 0 {
+//                 digit = 9-(x.abs()/exp) %10;
+//             }
+//             else {
+//                 digit = (x / exp) % 10;
+//             }
+//
+//             buckets[digit as usize] += 1;
+//
+//         }
+//         for i in 1..10 { buckets[i] += buckets[i - 1];
+//
+//         }
+//         for &x in arr.iter().rev() {
+//             let mut digit = 0;
+//             if x < 0 {
+//                 digit = 9-(x.abs()/exp) %10;
+//             }
+//             else {
+//                 digit = (x / exp) % 10;
+//             }
+//             temp[(buckets[digit as usize] - 1) as usize] = x;
+//             buckets[digit as usize] -= 1;
+//         } arr.copy_from_slice(&temp);
+//         exp *= 10;
+//     }
+//     arr
+// }
 
 
 fn main() {
@@ -150,12 +186,14 @@ fn main() {
     let (sorted, t) = timed(|| radix_sort(gen_vec(1_000_000)));
     println!("Sequential radix sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
 
+    // let mut arr = vec![1,-3,0]; // false
+    // let (sorted, t) = timed(|| another_radix(arr.to_vec()));
+    // println!("Parallel radix sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+    //
+    // let mut arr = vec![1,3,0]; // true
+    // let (sorted, t) = timed(|| another_radix(arr.to_vec()));
+    // println!("Parallel radix sort: sorted = {}, t = {}s", is_sorted(sorted), t.as_secs_f64());
+
+
 }
-
-
-
-
-
-
-
 
